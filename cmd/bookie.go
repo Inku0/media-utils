@@ -13,5 +13,5 @@ var bookieCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(bookieCmd)
+	RootCmd.AddCommand(bookieCmd)
 }

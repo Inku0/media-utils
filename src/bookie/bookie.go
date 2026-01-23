@@ -2,8 +2,8 @@ package bookie
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -13,18 +13,31 @@ import (
 	"media-utils/src/getenv"
 )
 
+type ReadarrHandler struct {
+	client *readarr.Readarr
+}
+
 // Connect returns a new instance of the starr.readarr API handle
-func Connect() *readarr.Readarr {
-	dotEnvVars, err := getenv.GetEnv()
+func Connect() (*ReadarrHandler, error) {
+	Env, err := getenv.GetEnv()
 	if err != nil {
-		log.Fatalf("failed to connect to Readarr")
-		return nil
+		return nil, err
 	}
 
-	starrConfig := starr.New(dotEnvVars.ApiKey, dotEnvVars.ApiURL.String(), 0)
+	url, ok := Env["READARR_BASE_URL"]
+	if !ok {
+		return nil, errors.New("missing READARR_API_URL from .env")
+	}
+
+	key, ok := Env["READARR_API_KEY"]
+	if !ok {
+		return nil, errors.New("missing READARR_API_KEY from .env")
+	}
+
+	starrConfig := starr.New(key, url, 0)
 	ReadarrAPI := readarr.New(starrConfig)
 
-	return ReadarrAPI
+	return &ReadarrHandler{client: ReadarrAPI}, nil
 }
 
 func AskForConfirmation(prompt string) bool {

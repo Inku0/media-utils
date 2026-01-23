@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"fmt"
+	"log"
+
 	"github.com/spf13/cobra"
 
 	"media-utils/src/bookie"
@@ -8,9 +11,9 @@ import (
 
 var Same bool
 var Unknown bool
-var Delete bool
-var Force bool
-var Add bool
+var doDelete bool
+var doRemoveFromClient bool
+var doAdd bool
 
 // queueCmd represents the queue command
 var queueCmd = &cobra.Command{
@@ -28,15 +31,22 @@ var queueCmd = &cobra.Command{
 		}
 
 		if filter == "" {
+			fmt.Printf("No filter was given. Check the -h help for more info.\n")
 			return
 		}
 
-		filteredQueue, err := bookie.FilterQueue(filter)
+		handler, err := bookie.Connect()
+		if err != nil {
+			log.Fatalf("failed to connect to Readarr: %s", err)
+			return
+		}
+
+		filteredQueue, err := handler.FilterQueue(filter)
 		if err != nil {
 			return
 		}
 
-		err = bookie.CleanQueue(filteredQueue, Delete, Force, Add)
+		err = handler.CleanQueue(filteredQueue, doDelete, doRemoveFromClient, doAdd)
 		if err != nil {
 			return
 		}
@@ -48,7 +58,7 @@ func init() {
 	queueCmd.Flags().BoolVar(&Same, "same", false, "Find existing books that haven't been imported")
 	queueCmd.Flags().BoolVar(&Unknown, "unknown", false, "Find books with an unknown author")
 	queueCmd.MarkFlagsMutuallyExclusive("same", "unknown")
-	queueCmd.Flags().BoolVarP(&Add, "add", "a", false, "Automatically search and add missing authors")
-	queueCmd.Flags().BoolVarP(&Delete, "delete", "d", false, "Delete matched books")
-	queueCmd.Flags().BoolVarP(&Force, "force", "f", false, "Delete matched books from download client if just ignoring is not possible")
+	queueCmd.Flags().BoolVarP(&doAdd, "add", "a", false, "TODO: Automatically search and add missing authors")
+	queueCmd.Flags().BoolVarP(&doDelete, "delete", "d", false, "Delete matched books")
+	queueCmd.Flags().BoolVarP(&doRemoveFromClient, "client", "c", false, "Delete matched books from client as well")
 }
