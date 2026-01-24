@@ -44,7 +44,7 @@ func AskForConfirmation(prompt string) bool {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Printf("%s [y/n]: ", prompt)
+		fmt.Printf("%s [y/N]: ", prompt)
 
 		response, err := reader.ReadString('\n')
 		if err != nil {
